@@ -11,23 +11,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 
 @RunWith(SpringRunner.class)
@@ -158,6 +154,8 @@ public class UserServiceImplUnitTestNoDB {
     public void notFindUserById(){
         Mockito.when(userrepo.findById(33L))
                 .thenThrow(ResourceNotFoundException.class);
+
+        assertEquals("cinnamon", userService.findUserById(33L).getUsername());
     }
 
     @Test
@@ -177,21 +175,64 @@ public class UserServiceImplUnitTestNoDB {
 
     @Test
     public void delete() {
+        Mockito.when(userrepo.findById(1L))
+                .thenReturn(Optional.of(userList.get(0)));
+        Mockito.doNothing()
+                .when(userrepo)
+                .deleteById(1L);
+        userService.delete(1);
+        assertEquals(5, userList.size());
     }
 
     @Test
     public void findByName() {
+        Mockito.when(userrepo.findByUsername("cinnamon test"))
+                .thenReturn(userList.get(1));
+        assertEquals("cinnamon test", userService.findByName("cinnamon test").getUsername());
+    }
+
+    @Test (expected = ResourceNotFoundException.class)
+    public void notFindByName(){
+        Mockito.when(userrepo.findByUsername("cinn"))
+                .thenThrow(ResourceNotFoundException.class);
+        assertEquals("test", userrepo.findByUsername("cinn"));
     }
 
     @Test
     public void save() {
+        Role temprole = new Role("admin");
+        String username = "test user";
+        User tempuser = new User(username, "LambdaLlama", "lamaLove@outlook.com");
+        tempuser.getRoles().add(new UserRoles(tempuser, temprole));
+
+        Mockito.when(userrepo.save(any(User.class)))
+                .thenReturn(tempuser);
+        Mockito.when(helpers.isAuthorizedToMakeChange(tempuser.getUsername()))
+                .thenReturn(true);
+        Mockito.when(roleservice.findRoleById(0))
+                .thenReturn(temprole);
+        userService.save(tempuser);
+        assertEquals("test user", tempuser.getUsername());
     }
 
     @Test
     public void update() {
+        User upduser = new User("jamie test", "LlamaLambda", "jlh@gmail.com");
+        Mockito.when(userrepo.findById(10L))
+                .thenReturn(Optional.of(userList.get(1)));
+        Mockito.when(helpers.isAuthorizedToMakeChange("cinnamon test"))
+                .thenReturn(true);
+        Mockito.when(roleservice.findRoleById(1L))
+                .thenReturn(new Role("admin"));
+        userService.update(upduser, 10);
     }
 
     @Test
     public void deleteAll() {
+        Mockito.doNothing()
+                .when(userrepo)
+                .deleteAll();
+        userService.deleteAll();
+        assertEquals(5, userList.size());
     }
 }
