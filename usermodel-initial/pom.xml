@@ -99,15 +99,9 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>spring-mock-mvc</artifactId>
-            <version></version>
+            <version>3.3.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <dependency>
-        <groupId>io.rest-assured</groupId>
-        <artifactId>spring-mock-mvc</artifactId>
-        <version>3.3.0</version>
-        <scope>test</scope>
-    </dependency>
 
 </project>

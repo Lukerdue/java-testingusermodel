@@ -26,7 +26,7 @@ import java.util.Locale;
 @Transactional
 @ConditionalOnProperty(
         prefix = "command.line.runner",
-        value="endabled",
+        value="enabled",
         havingValue="true",
         matchIfMissing = true
 )
